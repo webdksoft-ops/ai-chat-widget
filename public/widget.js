@@ -1,61 +1,62 @@
 (function () {
-  const chatBtn = document.createElement('button');
-  chatBtn.innerHTML = "Chat AI";
-  chatBtn.style.position = "fixed";
-  chatBtn.style.bottom = "20px";
-  chatBtn.style.right = "20px";
-  chatBtn.style.padding = "10px 16px";
-  chatBtn.style.background = "#0078ff";
-  chatBtn.style.color = "#fff";
-  chatBtn.style.borderRadius = "8px";
-  chatBtn.style.cursor = "pointer";
+  const backendUrl = document.currentScript.getAttribute("data-backend-url");
 
-  document.body.appendChild(chatBtn);
+  // CSS inject
+  const style = document.createElement("link");
+  style.rel = "stylesheet";
+  style.href = "https://your-vercel-app.vercel.app/widget.css";
+  document.head.appendChild(style);
 
-  const box = document.createElement('div');
-  box.style.position = "fixed";
-  box.style.bottom = "70px";
-  box.style.right = "20px";
-  box.style.width = "320px";
-  box.style.height = "420px";
-  box.style.background = "#fff";
-  box.style.border = "1px solid #ccc";
-  box.style.boxShadow = "0px 0px 10px rgba(0,0,0,0.2)";
-  box.style.borderRadius = "10px";
-  box.style.display = "none";
-  box.style.flexDirection = "column";
-  box.style.overflow = "hidden";
-  document.body.appendChild(box);
+  // Tạo nút mở chat
+  const button = document.createElement("div");
+  button.id = "ai-chat-button";
+  button.innerHTML = "💬";
+  document.body.appendChild(button);
 
-  chatBtn.onclick = () => {
-    box.style.display = (box.style.display === "none" ? "flex" : "none");
-  };
-
-  box.innerHTML = `
-    <div style="padding:10px; background:#0078ff; color:white;">Chat AI</div>
-    <div id="msgs" style="flex:1; padding:10px; overflow-y:auto;"></div>
-    <div style="padding:10px; display:flex;">
-      <input id="msg" style="flex:1; padding:5px;" placeholder="Nhập tin..."/>
-      <button id="send" style="margin-left:5px;">Gửi</button>
+  // Tạo popup chat
+  const popup = document.createElement("div");
+  popup.id = "ai-chat-popup";
+  popup.innerHTML = `
+    <div class="ai-chat-header">AI Chat</div>
+    <div class="ai-chat-body"></div>
+    <div class="ai-chat-footer">
+        <input id="ai-chat-input" placeholder="Nhập tin nhắn..." />
+        <button id="ai-chat-send">Gửi</button>
     </div>
   `;
+  document.body.appendChild(popup);
 
-  const msgs = box.querySelector("#msgs");
-  const input = box.querySelector("#msg");
+  let open = false;
 
-  box.querySelector("#send").onclick = async () => {
-    const text = input.value.trim();
+  button.onclick = () => {
+    open = !open;
+    popup.style.display = open ? "flex" : "none";
+  };
+
+  document.getElementById("ai-chat-send").onclick = async () => {
+    const inputEl = document.getElementById("ai-chat-input");
+    const text = inputEl.value;
     if (!text) return;
-    msgs.innerHTML += `<div><b>Bạn:</b> ${text}</div>`;
-    input.value = "";
 
-    const res = await fetch('/api/chat', {
+    addMessage("user", text);
+    inputEl.value = "";
+
+    const res = await fetch(backendUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: text })
     });
+
     const data = await res.json();
-    msgs.innerHTML += `<div><b>AI:</b> ${data.answer}</div>`;
-    msgs.scrollTop = msgs.scrollHeight;
+    addMessage("bot", data.reply);
   };
+
+  function addMessage(sender, text) {
+    const body = document.querySelector(".ai-chat-body");
+    const div = document.createElement("div");
+    div.className = `msg ${sender}`;
+    div.innerText = text;
+    body.appendChild(div);
+    body.scrollTop = body.scrollHeight;
+  }
 })();
