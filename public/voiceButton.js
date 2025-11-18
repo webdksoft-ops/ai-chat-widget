@@ -1,4 +1,4 @@
-const backendUrl = "https://ai-chat-widget.vercel.app/api/chat";
+const backendUrl = "https://ai-chat-widget-plum.vercel.app/api/chat";
 const systemMessage = {
   role: "system",
   content:
