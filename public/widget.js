@@ -1,5 +1,5 @@
 (function () {
-  const backendUrl = "https://ai-chat-widget-plum.vercel.app/api/chat";
+  const backendUrl = "https://ai-chat-widget-ten.vercel.app/api/chat";
 
   // Inject CSS cho widget
   const style = document.createElement("style");
