@@ -37,7 +37,6 @@
       flex: 1;
       overflow-y: auto;
       padding: 18px;
-      background: #f6f6f9;
     }
 
     .ai-row {
@@ -145,7 +144,6 @@
       padding: 12px;
       gap: 10px;
       border-top: 1px solid #e5e5e5;
-      background: #fff;
     }
 
     .ai-chat-footer input {
