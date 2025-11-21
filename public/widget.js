@@ -20,7 +20,6 @@
       overflow: hidden;
       border: 1px solid #e5e7eb;
       box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-      background: #fff;
     }
 
     .ai-chat-header {
@@ -31,6 +30,7 @@
       font-size: 19px;
       font-weight: bold;
       letter-spacing: 0.2px;
+      display:none;
     }
 
     .ai-chat-body {
