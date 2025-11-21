@@ -18,7 +18,6 @@
       flex-direction: column;
       font-family: "Segoe UI", sans-serif;
       overflow: hidden;
-      border: 1px solid #e5e7eb;
     }
 
     .ai-chat-header {
