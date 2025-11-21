@@ -19,7 +19,6 @@
       font-family: "Segoe UI", sans-serif;
       overflow: hidden;
       border: 1px solid #e5e7eb;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
     }
 
     .ai-chat-header {
@@ -151,7 +150,6 @@
       padding: 12px 18px;
       font-size: 15px;
       border-radius: 25px;
-      border: 1px solid #ccc;
       outline: none;
       transition: .18s;
     }
