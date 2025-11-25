@@ -20,9 +20,6 @@
     flex-direction:column;
     font-family: "Segoe UI", Roboto, Arial, sans-serif;
     overflow:hidden;
-    border:1px solid #e6e6ee;
-    box-shadow: 0 6px 20px rgba(22,23,26,0.06);
-    background:#fff;
   }
 
   .ai-chat-header{
@@ -32,12 +29,12 @@
     font-weight:700;
     font-size:18px;
     text-align:center;
+    display:none;
   }
 
   .ai-chat-body{
     flex:1;
     padding:18px;
-    background:#f7f7fb;
     overflow-y:auto;
   }
 
@@ -225,8 +222,6 @@
     scrollBottom();
     return row;
   }
-  // Tin nhắn chào mặc định
-  addMessage("bot", "Xin chào! Tôi có thể giúp gì cho bạn?");
   /* -------------------- Text-to-Speech (TTS) -------------------- */
   let ttsEnabled = true;
   // initialize from toggle state (aria-pressed true default)
