@@ -248,26 +248,23 @@
   chooseVoice();
   speechSynthesis.onvoiceschanged = chooseVoice;
 
-  async function speakText(text) {
-  if (!ttsEnabled) return;
-
-  try {
-    const res = await fetch("https://ai-chat-widget-ten.vercel.app/api/tts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text })
-    });
-
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-
-    const audio = new Audio(url);
-    audio.play();
-
-  } catch (err) {
-    console.warn("TTS play error", err);
+  function speakText(text) {
+    if (!ttsEnabled) return;
+    if (!("speechSynthesis" in window)) return;
+    try {
+      const u = new SpeechSynthesisUtterance(text);
+      // make it 'child-like': higher pitch, slightly faster
+      u.pitch = 1.8;   // higher pitch -> childlike
+      u.rate = 1.15;   // slightly faster
+      u.volume = 1.0;
+      if (selectedVoice) u.voice = selectedVoice;
+      // If voice language mismatch, keep it — pitch/rate still make it childlike
+      speechSynthesis.cancel(); // cancel previous to avoid queueing too long
+      speechSynthesis.speak(u);
+    } catch (e) {
+      console.warn("TTS error", e);
+    }
   }
-}
 
   /* -------------------- Speech-to-Text (STT) - Web Speech API -------------------- */
   let recognition = null;
