@@ -249,22 +249,61 @@
   speechSynthesis.onvoiceschanged = chooseVoice;
 
   function speakText(text) {
-    if (!ttsEnabled) return;
-    if (!("speechSynthesis" in window)) return;
-    try {
-      const u = new SpeechSynthesisUtterance(text);
-      // make it 'child-like': higher pitch, slightly faster
-      u.pitch = 1.8;   // higher pitch -> childlike
-      u.rate = 1.15;   // slightly faster
-      u.volume = 1.0;
-      if (selectedVoice) u.voice = selectedVoice;
-      // If voice language mismatch, keep it — pitch/rate still make it childlike
-      speechSynthesis.cancel(); // cancel previous to avoid queueing too long
-      speechSynthesis.speak(u);
-    } catch (e) {
-      console.warn("TTS error", e);
+  if (!ttsEnabled) return;
+  if (!("speechSynthesis" in window)) return;
+
+  try {
+    const utter = new SpeechSynthesisUtterance(text);
+
+    // Giọng tự nhiên, không robot
+    utter.pitch = 1.2;     // nhẹ, tự nhiên
+    utter.rate = 1.02;     // chậm nhẹ -> nghe như người thật
+    utter.volume = 1;
+
+    let voices = speechSynthesis.getVoices();
+
+    // Nếu chưa load voice → đợi
+    if (!voices || voices.length === 0) {
+      setTimeout(() => speakText(text), 300);
+      return;
     }
+
+    // Danh sách giọng nghe mượt trên Chrome/Edge
+    const preferred = [
+      "Google UK English Male",
+      "Google US English",
+      "Google UK English Female",
+      "Microsoft Aria Online (Natural) - English (United States)",
+      "Microsoft Jenny Online (Natural)"
+    ];
+
+    let bestVoice = null;
+
+    // Nếu bạn đã set selectedVoice trước đó → ưu tiên dùng trước
+    if (selectedVoice) {
+      bestVoice = voices.find(v => v.name === selectedVoice.name);
+    }
+
+    // Nếu chưa có thì tìm giọng Google/Microsoft đẹp nhất
+    if (!bestVoice) {
+      bestVoice = voices.find(v => preferred.includes(v.name));
+    }
+
+    // Nếu không có → fallback bằng giọng English đầu tiên
+    if (!bestVoice) {
+      bestVoice = voices.find(v => v.lang.startsWith("en")) || voices[0];
+    }
+
+    utter.voice = bestVoice;
+
+    // Hủy các lần đọc cũ để tránh đè nhau
+    speechSynthesis.cancel();
+    speechSynthesis.speak(utter);
+
+  } catch (err) {
+    console.warn("TTS Error:", err);
   }
+}
 
   /* -------------------- Speech-to-Text (STT) - Web Speech API -------------------- */
   let recognition = null;
