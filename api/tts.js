@@ -1,6 +1,26 @@
 import OpenAI from "openai";
-
+// Tên miền widget của bạn. Nên chỉ định cụ thể để bảo mật tốt hơn.
+const ALLOWED_ORIGIN = 'https://thuviensomnhongha.com';
 export default async function handler(req, res) {
+
+  // 1. THIẾT LẬP CÁC HEADER CHO CORS (Bảo mật)
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  // 2. XỬ LÝ YÊU CẦU PREFLIGHT (OPTIONS)
+  // Nếu trình duyệt gửi yêu cầu OPTIONS, nó chỉ đang kiểm tra CORS.
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+  
+  // 3. XỬ LÝ YÊU CẦU CHÍNH (POST)
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method Not Allowed' });
+    return;
+  }
   try {
     const { text } = req.body;
 
