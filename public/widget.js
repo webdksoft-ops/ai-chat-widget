@@ -248,60 +248,24 @@
   chooseVoice();
   speechSynthesis.onvoiceschanged = chooseVoice;
 
-  function speakText(text) {
+  async function speakText(text) {
   if (!ttsEnabled) return;
-  if (!("speechSynthesis" in window)) return;
 
   try {
-    const utter = new SpeechSynthesisUtterance(text);
+    const res = await fetch("https://ai-chat-widget-ten.vercel.app/api/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text })
+    });
 
-    // Giọng tự nhiên, không robot
-    utter.pitch = 1.2;     // nhẹ, tự nhiên
-    utter.rate = 1.02;     // chậm nhẹ -> nghe như người thật
-    utter.volume = 1;
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
 
-    let voices = speechSynthesis.getVoices();
-
-    // Nếu chưa load voice → đợi
-    if (!voices || voices.length === 0) {
-      setTimeout(() => speakText(text), 300);
-      return;
-    }
-
-    // Danh sách giọng nghe mượt trên Chrome/Edge
-    const preferred = [
-      "Google UK English Male",
-      "Google US English",
-      "Google UK English Female",
-      "Microsoft Aria Online (Natural) - English (United States)",
-      "Microsoft Jenny Online (Natural)"
-    ];
-
-    let bestVoice = null;
-
-    // Nếu bạn đã set selectedVoice trước đó → ưu tiên dùng trước
-    if (selectedVoice) {
-      bestVoice = voices.find(v => v.name === selectedVoice.name);
-    }
-
-    // Nếu chưa có thì tìm giọng Google/Microsoft đẹp nhất
-    if (!bestVoice) {
-      bestVoice = voices.find(v => preferred.includes(v.name));
-    }
-
-    // Nếu không có → fallback bằng giọng English đầu tiên
-    if (!bestVoice) {
-      bestVoice = voices.find(v => v.lang.startsWith("en")) || voices[0];
-    }
-
-    utter.voice = bestVoice;
-
-    // Hủy các lần đọc cũ để tránh đè nhau
-    speechSynthesis.cancel();
-    speechSynthesis.speak(utter);
+    const audio = new Audio(url);
+    audio.play();
 
   } catch (err) {
-    console.warn("TTS Error:", err);
+    console.warn("TTS play error", err);
   }
 }
 
