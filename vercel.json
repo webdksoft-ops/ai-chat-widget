@@ -1,10 +1,28 @@
 {
   "builds": [
     { "src": "api/chat.js", "use": "@vercel/node" },
+    { "src": "api/tts.js", "use": "@vercel/node" },  // Thêm nếu route TTS là file riêng
     { "src": "public/**", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/api/chat", "dest": "/api/chat.js" },
+    // 1. Cấu hình cho yêu cầu TTS
+    {
+      "src": "/api/tts",
+      "dest": "/api/tts.js", // Hoặc /api/chat.js nếu bạn dùng chung file
+      "methods": ["GET", "POST", "OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Origin": "https://thuviensomnhongha.com",
+        "Access-Control-Allow-Methods": "POST,OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type"
+      }
+    },
+    // 2. Cấu hình cho các route API khác (ví dụ: /api/chat)
+    { 
+      "src": "/api/chat", 
+      "dest": "/api/chat.js" 
+    },
+    // 3. Cấu hình dự phòng cho tài sản tĩnh
     { "src": "/(.*)", "dest": "/public/$1" }
   ]
 }
