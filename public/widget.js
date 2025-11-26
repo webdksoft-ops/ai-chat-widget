@@ -254,8 +254,8 @@
     try {
       const u = new SpeechSynthesisUtterance(text);
       // make it 'child-like': higher pitch, slightly faster
-      u.pitch = 1.8;   // higher pitch -> childlike
-      u.rate = 1.15;   // slightly faster
+      // u.pitch = 1.8;   // higher pitch -> childlike
+      // u.rate = 1.15;   // slightly faster
       u.volume = 1.0;
       if (selectedVoice) u.voice = selectedVoice;
       // If voice language mismatch, keep it — pitch/rate still make it childlike
