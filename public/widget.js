@@ -234,16 +234,33 @@
 
   // We'll choose a Vietnamese voice if available; otherwise fallback to default with higher pitch.
   let selectedVoice = null;
-  function chooseVoice() {
-    const voices = speechSynthesis.getVoices();
+  const desiredLang = 'vi'; // Chỉ cần lọc theo prefix 'vi'
+
+function chooseVoice() {
+    // Luôn gọi getVoices() mỗi lần để đảm bảo danh sách đã được cập nhật
+    const voices = speechSynthesis.getVoices(); 
     if (!voices || voices.length === 0) return;
-    // Prefer 'vi-VN' voices
-    selectedVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith("vi"));
-    if (!selectedVoice) {
-      // fallback: pick any female sounding voice or first voice
-      selectedVoice = voices.find(v => /female|woman|girl/i.test(v.name)) || voices[0];
+    
+    // 1. Lọc ra tất cả các giọng nói tiếng Việt
+    const vietnameseVoices = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith(desiredLang));
+    
+    if (vietnameseVoices.length > 0) {
+        // 2. Ưu tiên 1: Tìm giọng nói của Google (thường có chất lượng cao và ít rè)
+        let bestVoice = vietnameseVoices.find(v => v.name.includes('Google'));
+
+        // 3. Ưu tiên 2: Nếu không có Google, lấy giọng đầu tiên trong danh sách tiếng Việt
+        if (!bestVoice) {
+             bestVoice = vietnameseVoices[0];
+        }
+        
+        selectedVoice = bestVoice;
+        console.log("Đã chọn giọng nói:", selectedVoice.name, selectedVoice.lang);
+    } else {
+        // 4. Cơ chế dự phòng nếu không tìm thấy giọng Việt
+        console.warn("Không tìm thấy giọng nói tiếng Việt. Sử dụng giọng mặc định.");
+        selectedVoice = null; 
     }
-  }
+}
   // browsers may load voices asynchronously
   chooseVoice();
   speechSynthesis.onvoiceschanged = chooseVoice;
@@ -253,9 +270,6 @@
     if (!("speechSynthesis" in window)) return;
     try {
       const u = new SpeechSynthesisUtterance(text);
-      // make it 'child-like': higher pitch, slightly faster
-      // u.pitch = 1.8;   // higher pitch -> childlike
-      // u.rate = 1.15;   // slightly faster
       u.volume = 1.0;
       if (selectedVoice) u.voice = selectedVoice;
       // If voice language mismatch, keep it — pitch/rate still make it childlike
