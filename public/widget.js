@@ -364,12 +364,12 @@ function chooseVoice() {
       addMessage("bot", reply);
 
       // speak if enabled
-      speakText(reply);
+      // speakText(reply);
     } catch (err) {
       if (typingRow && typingRow.parentNode) typingRow.remove();
       addMessage("bot", "Không thể kết nối server.");
       console.error("Send error", err);
-      speakText("Xin lỗi, không thể kết nối tới máy chủ.");
+      // speakText("Xin lỗi, không thể kết nối tới máy chủ.");
     }
   }
 
@@ -395,7 +395,7 @@ function chooseVoice() {
     const welcome = "Xin chào! Mình là Gia sư Thỏ Hồng — bạn muốn hỏi gì hôm nay?";
     addMessage("bot", welcome);
     // speak short greeting if enabled
-    speakText(welcome);
+    // speakText(welcome);
   }, 300);
 
   /* -------------------- Notes for deployers (console) -------------------- */
