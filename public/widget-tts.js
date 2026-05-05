@@ -256,44 +256,41 @@ let currentAudio = null;
   async function speakText(text) {
   if (!ttsEnabled) return;
 
-  const sentences = text
-    .split(/[.!?]/)
-    .map(s => s.trim())
-    .filter(Boolean);
+  // lấy đoạn đầu để đọc ngay
+  const preview = text.slice(0, 120); 
 
-  for (const sentence of sentences) {
-    try {
-      const res = await fetch(backendUrl.replace("/chat", "/tts"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: sentence })
-      });
-      if (!res.ok) {
-        console.warn("TTS failed for sentence:", sentence);
-        continue; // bỏ qua câu lỗi, đọc câu tiếp
-      }
+  // phần còn lại
+  const rest = text.slice(120);
 
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
+  // chạy song song
+  playChunk(preview); // đọc ngay
 
-      if (currentAudio) currentAudio.pause();
-
-      currentAudio = new Audio(url);
-      await currentAudio.play().catch(() => {
-        console.warn("🔇 Autoplay bị chặn");
-        const btn = document.createElement("button");
-        btn.textContent = "🔊 Nghe tiếp";
-        btn.onclick = () => currentAudio.play();
-        document.body.appendChild(btn);
-      });
-
-    } catch (err) {
-      console.error("TTS error:", err);
-      continue;
-    }
+  if (rest.trim()) {
+    setTimeout(() => playChunk(rest), 300); // đọc tiếp
   }
 }
+async function playChunk(text) {
+  try {
+    const res = await fetch(backendUrl.replace("/chat", "/tts"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text })
+    });
 
+    if (!res.ok) return;
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+
+    if (currentAudio) currentAudio.pause();
+
+    currentAudio = new Audio(url);
+
+    await currentAudio.play().catch(() => {});
+  } catch (err) {
+    console.error(err);
+  }
+}
   /* -------------------- Speech-to-Text -------------------- */
   let recognition = null;
   let isRecording = false;
