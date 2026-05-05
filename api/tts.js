@@ -33,7 +33,7 @@ export default async function handler(req, res) {
     // --- GIỌNG CHATGPT (juniper – trẻ em) ---
     const audio = await client.audio.speech.create({
       model: "gpt-4o-mini-tts",      // Model TTS ChatGPT mới nhất 2025
-      voice: "verse",              // nữ, rõ
+      voice: "nova",              // nữ, rõ
       input: text,
       format: "mp3"
     });
