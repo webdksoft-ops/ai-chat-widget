@@ -177,6 +177,20 @@
   const voiceBtn = container.querySelector("#ai-voice-btn");
   const ttsToggle = container.querySelector("#ai-tts-toggle");
 
+  /* -------------------- unlock audio -------------------- */
+  let audioUnlocked = false;
+function unlockAudio() {
+  if (audioUnlocked) return;
+
+  const audio = new Audio();
+  audio.src = "";
+  audio.play().then(() => {
+    audioUnlocked = true;
+    console.log("🔊 Audio unlocked");
+  }).catch(() => {});
+}
+document.addEventListener("click", unlockAudio, { once: true });
+  
   /* -------------------- Helpers -------------------- */
   function scrollBottom() { bodyEl.scrollTop = bodyEl.scrollHeight; }
 
@@ -238,27 +252,43 @@
     ttsToggle.classList.toggle("active", ttsEnabled);
     ttsToggle.setAttribute("aria-pressed", ttsEnabled ? "true" : "false");
   });
-
+let currentAudio = null;
   async function speakText(text) {
-    if (!ttsEnabled) return;
+  if (!ttsEnabled) return;
 
-    try {
-      const res = await fetch("https://ai-chat-widget-ten.vercel.app/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text })
-      });
+  try {
+    const ttsUrl = backendUrl.replace("/chat", "/tts");
 
-      const buffer = await res.arrayBuffer();
-      const blob = new Blob([buffer], { type: "audio/mpeg" });
-      const url = URL.createObjectURL(blob);
+    const res = await fetch(ttsUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text })
+    });
 
-      const audio = new Audio(url);
-      audio.play();
-    } catch (err) {
-      console.error("TTS error", err);
+    if (!res.ok) {
+      console.error("TTS failed:", await res.text());
+      return;
     }
+
+    const buffer = await res.arrayBuffer();
+    const blob = new Blob([buffer], { type: "audio/mpeg" });
+    const url = URL.createObjectURL(blob);
+
+    // stop audio cũ
+    if (currentAudio) {
+      currentAudio.pause();
+    }
+
+    currentAudio = new Audio(url);
+
+    await currentAudio.play().catch(() => {
+      console.warn("🔇 Autoplay bị chặn");
+    });
+
+  } catch (err) {
+    console.error("TTS error", err);
   }
+}
 
   /* -------------------- Speech-to-Text -------------------- */
   let recognition = null;
@@ -350,9 +380,13 @@
 
   /* -------------------- Welcome message giữ nguyên -------------------- */
   setTimeout(() => {
-    const welcome = "Xin chào! Mình là Gia sư Thỏ Hồng — bạn muốn hỏi gì hôm nay?";
-    addMessage("bot", welcome);
+  const welcome = "Xin chào! Mình là Gia sư Thỏ Hồng — bạn muốn hỏi gì hôm nay?";
+  addMessage("bot", welcome);
+
+  // chỉ đọc khi user đã tương tác
+  if (audioUnlocked) {
     speakText(welcome);
-  }, 300);
+  }
+}, 300);
 
 })();
