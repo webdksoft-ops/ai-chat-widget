@@ -256,37 +256,41 @@ let currentAudio = null;
   async function speakText(text) {
   if (!ttsEnabled) return;
 
-  try {
-    const ttsUrl = backendUrl.replace("/chat", "/tts");
+  const sentences = text
+    .split(/[.!?]/)
+    .map(s => s.trim())
+    .filter(Boolean);
 
-    const res = await fetch(ttsUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text })
-    });
+  for (const sentence of sentences) {
+    try {
+      const res = await fetch(backendUrl.replace("/chat", "/tts"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: sentence })
+      });
+      if (!res.ok) {
+        console.warn("TTS failed for sentence:", sentence);
+        continue; // bỏ qua câu lỗi, đọc câu tiếp
+      }
 
-    if (!res.ok) {
-      console.error("TTS failed:", await res.text());
-      return;
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+
+      if (currentAudio) currentAudio.pause();
+
+      currentAudio = new Audio(url);
+      await currentAudio.play().catch(() => {
+        console.warn("🔇 Autoplay bị chặn");
+        const btn = document.createElement("button");
+        btn.textContent = "🔊 Nghe tiếp";
+        btn.onclick = () => currentAudio.play();
+        document.body.appendChild(btn);
+      });
+
+    } catch (err) {
+      console.error("TTS error:", err);
+      continue;
     }
-
-    const buffer = await res.arrayBuffer();
-    const blob = new Blob([buffer], { type: "audio/mpeg" });
-    const url = URL.createObjectURL(blob);
-
-    // stop audio cũ
-    if (currentAudio) {
-      currentAudio.pause();
-    }
-
-    currentAudio = new Audio(url);
-
-    await currentAudio.play().catch(() => {
-      console.warn("🔇 Autoplay bị chặn");
-    });
-
-  } catch (err) {
-    console.error("TTS error", err);
   }
 }
 
